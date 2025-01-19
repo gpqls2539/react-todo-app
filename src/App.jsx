@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import TodoApp from "./components/TodoApp";
 import TodoForm from "./components/TodoForm";
 import TodoInput from "./components/TodoInput";
@@ -6,6 +6,7 @@ import TodoRegistButton from "./components/TodoRegistButton";
 import TodoList from "./components/TodoList";
 import TodoItem from "./components/TodoItem";
 import TodoTextarea from "./components/TodoTextarea";
+import TodoDetail from "./components/TodoDetail";
 import "./App.css";
 
 /**
@@ -22,7 +23,7 @@ import "./App.css";
  *  - 할 일이 완료됐는지 체크할 체크 버튼
  *
  * 3. 부가적인 기능 (고민해 볼 수준)
- *  - 할 일 내용은 자세히 보기 버튼으로 레이어를 띄워봄
+ *  - 할 일 내용은 자세히 보기 버튼으로 레이어를 띄워봄 250118 ok
  *  - 할 일 제목을 수정할 수 있어야 한다.
  *  - 할 일 내용 레이어에서 내용을 수정할 수 있어야 한다.
  *  - 선택 삭제 기능, 전체 선택 삭제 기능
@@ -41,15 +42,19 @@ import "./App.css";
  *  - 등록 후 리스트에 추가 되어야 한다.
  *
  * 3. 리스트에서는 (숙제!)
- *  - 완료를 누르면 해당 리스트에 완료 버튼에 완료 상태로 보여야 한다.
- *  - 삭제를 누르면 해당 리스트는 삭제 되어야 한다.
- *  - 완료 상태인 리스트는 삭제 할 수 없어야 한다.
+ *  - 완료를 누르면 해당 리스트에 완료 버튼에 완료 상태로 보여야 한다. 250113 ok
+ *  - 삭제를 누르면 해당 리스트는 삭제 되어야 한다. 250113 ok
+ *  - 완료 상태인 리스트는 삭제 할 수 없어야 한다. 250113 ok
  */
 
 function App() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [todos, setTodos] = useState([{ id: 1, title: "할 일1" }]);
+  const [todos, setTodos] = useState([
+    { id: 1, title: "할 일1", content: "내용", completed: false },
+  ]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [detailContent, setDetailContent] = useState(null);
 
   const handleChangeTitle = (e) => {
     const value = e.target.value;
@@ -65,7 +70,40 @@ function App() {
     const duplicated = todos.some((todo) => todo.title === title);
 
     if (duplicated) return;
-    setTodos((todos) => [...todos, { id: todos.length + 1, title, content }]);
+    setTodos((todos) => [
+      ...todos,
+      { id: todos.length + 1, title, content, completed: false },
+    ]);
+  };
+
+  const handleConfirmTodo = (id) => () => {
+    setTodos((todos) =>
+      todos.map((todo) => {
+        if (todo.id === id) {
+          return { ...todo, completed: true };
+        }
+        return todo;
+      })
+    );
+  };
+
+  const handleDeleteTodo = (id) => () => {
+    setTodos((todos) => todos.filter((todo) => todo.id !== id));
+  };
+
+  const handleOpenDetail = (item) => () => {
+    setModalOpen(true);
+    setDetailContent(
+      <ul>
+        <li>{item.title}</li>
+        <li>{item.completed ? "완료" : "미완료"}</li>
+      </ul>
+    );
+  };
+
+  const handleCloseDetail = () => {
+    setModalOpen(false);
+    setDetailContent(null);
   };
 
   // useEffect(() => {
@@ -85,9 +123,21 @@ function App() {
       </TodoForm>
       <TodoList>
         {todos.map((item) => (
-          <TodoItem key={item.id} title={item.title} />
+          <TodoItem
+            key={item.id}
+            item={item}
+            content={item.content}
+            onConfirm={handleConfirmTodo(item.id)}
+            onDelete={handleDeleteTodo(item.id)}
+            onDetail={handleOpenDetail(item)}
+          />
         ))}
       </TodoList>
+      <TodoDetail
+        modalOpen={modalOpen}
+        content={detailContent}
+        onModalClose={handleCloseDetail}
+      />
     </TodoApp>
   );
 }

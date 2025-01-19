@@ -1,0 +1,21 @@
+ul li p {
+  display: none;
+  position: fixed;
+  width: 300px;
+  height: 300px;
+  padding: 40px 20px;
+  border: 1px solid #000;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+ul li.show p {
+  display: block;
+}
+ul li p button.hideBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+ul li.done h1 {
+  text-decoration: line-through;
+}
